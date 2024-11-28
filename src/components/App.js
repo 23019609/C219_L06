@@ -65,7 +65,7 @@ function Form({ handleAddItem }) {
     );
 }
 
-function Item({ item }) {
+function Item({ item, handleDeleteItem, handleUpdateItem }) {
     // if (item.packed) {
     //     listitem = (
     //         <li style={{ textDecoration: "line-through" }}>
@@ -82,28 +82,63 @@ function Item({ item }) {
     // return listitem;
 
     return (
-        <li style={{ textDecoration: item.packed ? "line-through" : "none" }}>
+        <li
+            style={{
+                textDecoration: item.packed ? "line-through" : "none",
+            }}
+        >
+            <input
+                type="checkbox"
+                onChange={() => handleUpdateItem(item.id)}
+                checked={item.packed}
+            />
             {item.description} ({item.quantity})
+            <button type="button" onClick={() => handleDeleteItem(item.id)}>
+                ✖
+            </button>
         </li>
     );
 }
 
-function PackingList({ items }) {
+function PackingList({ items, handleDeleteItem, handleUpdateItem }) {
     return (
         <div className="list">
             <ul>
                 {items.map((item) => (
-                    <Item item={item} key={item.id} />
+                    <Item
+                        item={item}
+                        key={item.id}
+                        handleDeleteItem={handleDeleteItem}
+                        handleUpdateItem={handleUpdateItem}
+                    />
                 ))}
             </ul>
         </div>
     );
 }
 
-function Stats() {
+function Stats({ items }) {
+    const numItems = items.length;
+    // .reduce(accumulator, currentValue) --> both are required, optional ones are currentIndex, array, and initialValue
+    // acc = initial or previously returned value
+    // cur = value of current element
+    const packedItems = items.reduce(
+        (acc, cur) => (cur.packed ? acc + 1 : acc),
+        0 // initialValue
+    );
+    const packedFilter = items.filter((item) => item.packed).length;
+    // Math.round --> round to nearest whole number
+    // Math.ceil --> round up
+    // Math.floor --> round down
+    // <number>.toFixed(2) --> round to 2 decimal places
+    const packedPercentage = Math.round((packedFilter / numItems) * 100);
+
     return (
         <footer className="stats">
-            <em>You have X items in the list. You already packed Y (Z%).</em>
+            <em>
+                You have {numItems} items in the list. You already packed{" "}
+                {packedItems} ({packedPercentage}%).
+            </em>
         </footer>
     );
 }
@@ -115,12 +150,44 @@ function App() {
         setItems((prev) => [...prev, item]);
     }
 
+    function handleDeleteItem(targetId) {
+        setItems((prev) => prev.filter((item, id) => item.id !== targetId));
+    }
+
+    function handleUpdateItem(targetItem) {
+        // items.map(function (item, i) {
+
+        // if (item.id === targetItem) {
+        //     //check id
+        //     item.packed = !item.packed;
+        // }
+
+        // if (i.id === targetItem && i.packed === false) {
+        //     return (targetItem.packed = true);
+        // } else if (i.id === targetItem && i.packed === true) {
+        //     return (targetItem.packed = false);
+        // }
+
+        const updateItem = items.map(
+            (item) =>
+                item.id === targetItem
+                    ? { ...item, packed: !item.packed } // create new item list with updated packed value
+                    : item // if targetItem not found, return original item list
+        );
+
+        setItems(updateItem);
+    }
+
     return (
         <div className="app">
             <Logo />
             <Form handleAddItem={handleAddItem} />
-            <PackingList items={items} />
-            <Stats />
+            <PackingList
+                items={items}
+                handleDeleteItem={handleDeleteItem}
+                handleUpdateItem={handleUpdateItem}
+            />
+            <Stats items={items} />
         </div>
     );
 }
