@@ -131,7 +131,8 @@ function Stats({ items }) {
     // Math.ceil --> round up
     // Math.floor --> round down
     // <number>.toFixed(2) --> round to 2 decimal places
-    const packedPercentage = Math.round((packedFilter / numItems) * 100);
+    const packedPercentage =
+        packedFilter > 0 ? Math.round((packedFilter / numItems) * 100) : 0;
 
     return (
         <footer className="stats">
